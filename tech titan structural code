@@ -1,0 +1,111 @@
+#include <Servo.h>
+#include <SoftwareSerial.h>
+
+#define ENA 5 // Motor driver enable pin for left side
+#define IN1 6 // Motor driver input pin 1 for left side
+#define IN2 7 // Motor driver input pin 2 for left side
+#define ENB 10 // Motor driver enable pin for right side
+#define IN3 11 // Motor driver input pin 1 for right side
+#define IN4 12 // Motor driver input pin 2 for right side
+
+#define SERVO_PIN 9 // Pin for servo motor
+#define BALL_THROW_DELAY 1000 // Delay between ball throws (in milliseconds)
+
+SoftwareSerial bluetoothSerial(2, 3); // RX, TX pins for Bluetooth module
+Servo ballServo;
+
+void setup() {
+  // Initialize serial communication with Bluetooth module
+  bluetoothSerial.begin(9600);
+  
+  // Initialize motor control pins
+  pinMode(ENA, OUTPUT);
+  pinMode(IN1, OUTPUT);
+  pinMode(IN2, OUTPUT);
+  pinMode(ENB, OUTPUT);
+  pinMode(IN3, OUTPUT);
+  pinMode(IN4, OUTPUT);
+  
+  // Initialize servo
+  ballServo.attach(SERVO_PIN);
+}
+
+void loop() {
+  if (bluetoothSerial.available()) {
+    char command = bluetoothSerial.read();
+    handleCommand(command);
+  }
+}
+
+void handleCommand(char command) {
+  switch (command) {
+    case 'F':
+      moveForward();
+      break;
+    case 'B':
+      moveBackward();
+      break;
+    case 'L':
+      turnLeft();
+      break;
+    case 'R':
+      turnRight();
+      break;
+    case 'T':
+      throwBall();
+      break;
+    default:
+      stopMotors();
+      break;
+  }
+}
+
+void moveForward() {
+  digitalWrite(IN1, HIGH);
+  digitalWrite(IN2, LOW);
+  digitalWrite(IN3, HIGH);
+  digitalWrite(IN4, LOW);
+  analogWrite(ENA, 150); // Adjust speed as needed
+  analogWrite(ENB, 150); // Adjust speed as needed
+}
+
+void moveBackward() {
+  digitalWrite(IN1, LOW);
+  digitalWrite(IN2, HIGH);
+  digitalWrite(IN3, LOW);
+  digitalWrite(IN4, HIGH);
+  analogWrite(ENA, 150); // Adjust speed as needed
+  analogWrite(ENB, 150); // Adjust speed as needed
+}
+
+void turnLeft() {
+  digitalWrite(IN1, LOW);
+  digitalWrite(IN2, HIGH);
+  digitalWrite(IN3, HIGH);
+  digitalWrite(IN4, LOW);
+  analogWrite(ENA, 150); // Adjust speed as needed
+  analogWrite(ENB, 150); // Adjust speed as needed
+}
+
+void turnRight() {
+  digitalWrite(IN1, HIGH);
+  digitalWrite(IN2, LOW);
+  digitalWrite(IN3, LOW);
+  digitalWrite(IN4, HIGH);
+  analogWrite(ENA, 150); // Adjust speed as needed
+  analogWrite(ENB, 150); // Adjust speed as needed
+}
+
+void stopMotors() {
+  digitalWrite(IN1, LOW);
+  digitalWrite(IN2, LOW);
+  digitalWrite(IN3, LOW);
+  digitalWrite(IN4, LOW);
+}
+
+void throwBall() {
+  // Adjust servo position to throw the ball
+  ballServo.write(90); // Adjust angle as needed
+  delay(BALL_THROW_DELAY);
+  ballServo.write(0); // Reset servo position
+}
